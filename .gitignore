@@ -1,0 +1,17 @@
+.deps/
+Makefile
+Makefile.in
+aclocal.m4
+compile
+config.h
+config.in
+config.log
+config.status
+configure
+depcomp
+install-sh
+lib_mysqludf_amqp
+*.o
+*~
+missing
+stamp-h1

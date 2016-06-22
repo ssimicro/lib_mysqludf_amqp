@@ -97,8 +97,7 @@ my_bool lib_mysqludf_amqp_sendstring_init(UDF_INIT *initid, UDF_ARGS *args, char
         return 1;
     }
 
-    /* TODO verify that the cast is correct (it works, but is it the right thing to do here) */
-    rc = amqp_socket_open(knapsack->socket, args->args[0], (int)(*(long long *)args->args[1]) );
+    rc = amqp_socket_open(knapsack->socket, args->args[0], (int)(*((long long *) args->args[1])));
     if (rc < 0) {
         amqp_destroy_connection(knapsack->conn);
         free(initid->ptr);

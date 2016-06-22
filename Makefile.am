@@ -3,7 +3,7 @@ ACLOCAL_AMFLAGS = -I m4
 EXTRA_DIST = README.md CONTRIBUTING.md
 
 lib_LTLIBRARIES = lib_mysqludf_amqp.la
-lib_mysqludf_amqp_la_SOURCES = lib_mysqludf_amqp.c
+lib_mysqludf_amqp_la_SOURCES = lib_mysqludf_amqp_info.c lib_mysqludf_amqp_sendstring.c
 lib_mysqludf_amqp_la_CFLAGS = -DMYSQL_SERVER @MYSQL_CFLAGS@ @RABBITMQ_CFLAGS@
 lib_mysqludf_amqp_la_LDFLAGS = -module -avoid-version -no-undefined @MYSQL_LDFLAGS@ @RABBITMQ_LIBS@
 

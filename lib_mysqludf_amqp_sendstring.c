@@ -14,11 +14,6 @@
 #ifdef    __cplusplus
 extern "C" {
 #endif
-    /* TODO should the various functions be split into separate files (I think so) */
-
-    my_bool lib_mysqludf_amqp_info_init(UDF_INIT *initid, UDF_ARGS *args, char *message);
-    char *lib_mysqludf_amqp_info(UDF_INIT *initid, UDF_ARGS *args, char *result, unsigned long *length, char *is_null, char *error);
-    void lib_mysqludf_amqp_info_deinit(UDF_INIT *initid);
 
     my_bool lib_mysqludf_amqp_sendstring_init(UDF_INIT *initid, UDF_ARGS *args, char *message);
     char *lib_mysqludf_amqp_sendstring(UDF_INIT *initid, UDF_ARGS *args, char *result, unsigned long *length, char *is_null, char *error);
@@ -27,44 +22,6 @@ extern "C" {
 #ifdef    __cplusplus
 }
 #endif
-
-/*
- * lib_mysqludf_amqp_info
- */
-
-my_bool lib_mysqludf_amqp_info_init(UDF_INIT *initid, UDF_ARGS *args, char *message) {
-
-    if (args->arg_count != 0) {
-        strncpy(message, "lib_mysqludf_amqp_info: invalid arguments", MYSQL_ERRMSG_SIZE);
-        return 1;
-    }
-
-    initid->max_length = strlen(PACKAGE_STRING) + 1;
-    initid->maybe_null = 0;
-    initid->const_item = 1;
-
-    return 0;
-}
-
-char* lib_mysqludf_amqp_info(UDF_INIT *initid, UDF_ARGS *args, char* result, unsigned long* length, char *is_null, char *error) {
-
-    strncpy(result, PACKAGE_STRING, *length);
-
-    *length = strlen(result);
-    *is_null = 0;
-    *error = 0;
-
-    return result;
-}
-
-void lib_mysqludf_amqp_info_deinit(UDF_INIT *initid) {
-    return;
-}
-
-
-/*
- * lib_mysqludf_amqp_sendstring
- */
 
 typedef struct knapsack {   /* TODO come up with a better name for this */
     amqp_socket_t *socket;

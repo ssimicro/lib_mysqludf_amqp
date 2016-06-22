@@ -77,12 +77,11 @@ my_bool lib_mysqludf_amqp_sendstring_init(UDF_INIT *initid, UDF_ARGS *args, char
     amqp_rpc_reply_t reply;
     knapsack_t *knapsack;
 
-    /* TODO determine max argument length (is it 255?) and document it */
-    if (args->arg_count != 5 || (args->arg_type[0] != STRING_RESULT) /* host */
-                             || (args->arg_type[1] != INT_RESULT)    /* port */
-                             || (args->arg_type[2] != STRING_RESULT) /* exchange */
-                             || (args->arg_type[3] != STRING_RESULT) /* routing key */
-                             || (args->arg_type[4] != STRING_RESULT)) { /* message */
+    if (args->arg_count != 5 || (args->arg_type[0] != STRING_RESULT)        /* host */
+                             || (args->arg_type[1] != INT_RESULT)           /* port */
+                             || (args->arg_type[2] != STRING_RESULT)        /* exchange */
+                             || (args->arg_type[3] != STRING_RESULT)        /* routing key */
+                             || (args->arg_type[4] != STRING_RESULT)) {     /* message */
         strncpy(message, "lib_mysqludf_amqp_sendstring: invalid arguments", MYSQL_ERRMSG_SIZE);
         return 1;
     }

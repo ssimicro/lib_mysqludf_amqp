@@ -38,8 +38,7 @@ SELECT lib_mysqludf_amqp_info();
 
 ### `lib_mysqludf_amqp_sendstring(hostname, port, exchange, routingKey, message)`
 
-Sends a `message` of up to 255 characters to the given `exchange` on the provided
-`hostname` and `port` with the supplied `routingKey`.
+Sends a `message` to the given `exchange` on the provided `hostname` and `port` with the supplied `routingKey`.
 
 #### Example
 

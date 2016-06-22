@@ -15,6 +15,7 @@ AC_PROG_LIBTOOL
 AC_SUBST(LIBTOOL)
 
 AC_CHECK_LIB(dl,dlopen,,AC_MSG_ERROR("Can't find dlopen() in libdl"))
+
 AX_LIB_MYSQL([5.7.0])
 if test -n "$MYSQL_PLUGINDIR" && test "$libdir" == '${exec_prefix}/lib' ; then
     AC_MSG_NOTICE(Setting libdir to mysql plugin dir $MYSQL_PLUGINDIR)
@@ -23,6 +24,10 @@ if test -n "$MYSQL_PLUGINDIR" && test "$libdir" == '${exec_prefix}/lib' ; then
 else
     AC_MSG_NOTICE(No idea where to install this plugin. Will try $libdir)
 fi
+
+PKG_CHECK_MODULES([RABBITMQ], [librabbitmq])
+AC_SUBST([RABBITMQ_CFLAGS])
+AC_SUBST([RABBITMQ_LIBS])
 
 AC_C_CONST
 AC_TYPE_SIZE_T

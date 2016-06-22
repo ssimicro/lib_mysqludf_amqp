@@ -14,6 +14,8 @@
 #ifdef    __cplusplus
 extern "C" {
 #endif
+    /* TODO should the various functions be split into separate files (I think so) */
+
     my_bool lib_mysqludf_amqp_info_init(UDF_INIT *initid, UDF_ARGS *args, char *message);
     char *lib_mysqludf_amqp_info(UDF_INIT *initid, UDF_ARGS *args, char *result, unsigned long *length, char *is_null, char *error);
     void lib_mysqludf_amqp_info_deinit(UDF_INIT *initid);
@@ -64,7 +66,7 @@ void lib_mysqludf_amqp_info_deinit(UDF_INIT *initid) {
  * lib_mysqludf_amqp_sendstring
  */
 
-typedef struct knapsack {
+typedef struct knapsack {   /* TODO come up with a better name for this */
     amqp_socket_t *socket;
     amqp_connection_state_t conn;
 } knapsack_t;
@@ -75,6 +77,7 @@ my_bool lib_mysqludf_amqp_sendstring_init(UDF_INIT *initid, UDF_ARGS *args, char
     amqp_rpc_reply_t reply;
     knapsack_t *knapsack;
 
+    /* TODO determine max argument length (is it 255?) and document it */
     if (args->arg_count != 5 || (args->arg_type[0] != STRING_RESULT) /* host */
                              || (args->arg_type[1] != INT_RESULT)    /* port */
                              || (args->arg_type[2] != STRING_RESULT) /* exchange */
@@ -87,7 +90,7 @@ my_bool lib_mysqludf_amqp_sendstring_init(UDF_INIT *initid, UDF_ARGS *args, char
     knapsack = (knapsack_t *) malloc(sizeof(knapsack_t));
     knapsack->conn = amqp_new_connection();
     knapsack->socket = amqp_tcp_socket_new(knapsack->conn);
-    if (knapsack->socket == NULL) {
+    if (knapsack->socket == NULL) {                             /* TODO need a clean-up function to avoid these long IF blocks */
         amqp_destroy_connection(knapsack->conn);
         free(initid->ptr);
         initid->ptr = NULL;
@@ -95,6 +98,7 @@ my_bool lib_mysqludf_amqp_sendstring_init(UDF_INIT *initid, UDF_ARGS *args, char
         return 1;
     }
 
+    /* TODO verify that the cast is correct (it works, but is it the right thing to do here) */
     rc = amqp_socket_open(knapsack->socket, args->args[0], (int)(*(long long *)args->args[1]) );
     if (rc < 0) {
         amqp_destroy_connection(knapsack->conn);
@@ -104,6 +108,7 @@ my_bool lib_mysqludf_amqp_sendstring_init(UDF_INIT *initid, UDF_ARGS *args, char
         return 1;
     }
 
+    /* TODO make login credentials configurable - do we have access to session variables? */
     reply = amqp_login(knapsack->conn, "/", 0, 131072, 0, AMQP_SASL_METHOD_PLAIN, "guest", "guest");
     if (reply.reply_type != AMQP_RESPONSE_NORMAL) {
         amqp_connection_close(knapsack->conn, AMQP_REPLY_SUCCESS);
@@ -139,7 +144,7 @@ char* lib_mysqludf_amqp_sendstring(UDF_INIT *initid, UDF_ARGS *args, char* resul
 
     amqp_basic_properties_t props;
     props._flags = AMQP_BASIC_CONTENT_TYPE_FLAG | AMQP_BASIC_DELIVERY_MODE_FLAG;
-    props.content_type = amqp_cstring_bytes("text/plain");
+    props.content_type = amqp_cstring_bytes("text/plain"); /* TODO would be nice to support JSON */
     props.delivery_mode = 2;
 
     rc = amqp_basic_publish(knapsack->conn, 1, amqp_cstring_bytes(args->args[2]), amqp_cstring_bytes(args->args[3]), 0, 0, &props, amqp_cstring_bytes(args->args[4]));
@@ -156,6 +161,8 @@ char* lib_mysqludf_amqp_sendstring(UDF_INIT *initid, UDF_ARGS *args, char* resul
 
     *is_null = 1;
     *error = 0;
+
+    /* TODO should this return something besides NULL? SUCCESS/FAIL? Some type of correlationId? */
 
     return NULL;
 }

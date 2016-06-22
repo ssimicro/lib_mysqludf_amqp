@@ -49,4 +49,4 @@ SELECT lib_mysqludf_amqp_sendstring('localhost', 5672, 'udf', 'test', 'Hello, Wo
 
 ## License
 
-See [LICENSE.md](https://github.com/ssimicro/lib_mysqludf_amqp/blob/master/LICENCE.md).
+See [COPYING](https://github.com/ssimicro/lib_mysqludf_amqp/blob/master/COPYING).

@@ -34,11 +34,13 @@ my_bool lib_mysqludf_amqp_sendstring_init(UDF_INIT *initid, UDF_ARGS *args, char
     amqp_rpc_reply_t reply;
     knapsack_t *knapsack;
 
-    if (args->arg_count != 5 || (args->arg_type[0] != STRING_RESULT)        /* host */
+    if (args->arg_count != 7 || (args->arg_type[0] != STRING_RESULT)        /* host */
                              || (args->arg_type[1] != INT_RESULT)           /* port */
-                             || (args->arg_type[2] != STRING_RESULT)        /* exchange */
-                             || (args->arg_type[3] != STRING_RESULT)        /* routing key */
-                             || (args->arg_type[4] != STRING_RESULT)) {     /* message */
+                             || (args->arg_type[2] != STRING_RESULT)        /* username */
+                             || (args->arg_type[3] != STRING_RESULT)        /* password */
+                             || (args->arg_type[4] != STRING_RESULT)        /* exchange */
+                             || (args->arg_type[5] != STRING_RESULT)        /* routing key */
+                             || (args->arg_type[6] != STRING_RESULT)) {     /* message */
         strncpy(message, "lib_mysqludf_amqp_sendstring: invalid arguments", MYSQL_ERRMSG_SIZE);
         return 1;
     }
@@ -63,8 +65,7 @@ my_bool lib_mysqludf_amqp_sendstring_init(UDF_INIT *initid, UDF_ARGS *args, char
         return 1;
     }
 
-    /* TODO make login credentials configurable - do we have access to session variables? */
-    reply = amqp_login(knapsack->conn, "/", 0, 131072, 0, AMQP_SASL_METHOD_PLAIN, "guest", "guest");
+    reply = amqp_login(knapsack->conn, "/", 0, 131072, 0, AMQP_SASL_METHOD_PLAIN, args->args[2], args->args[3]);
     if (reply.reply_type != AMQP_RESPONSE_NORMAL) {
         amqp_connection_close(knapsack->conn, AMQP_REPLY_SUCCESS);
         amqp_destroy_connection(knapsack->conn);
@@ -102,7 +103,7 @@ char* lib_mysqludf_amqp_sendstring(UDF_INIT *initid, UDF_ARGS *args, char* resul
     props.content_type = amqp_cstring_bytes("text/plain"); /* TODO would be nice to support JSON */
     props.delivery_mode = 2;
 
-    rc = amqp_basic_publish(knapsack->conn, 1, amqp_cstring_bytes(args->args[2]), amqp_cstring_bytes(args->args[3]), 0, 0, &props, amqp_cstring_bytes(args->args[4]));
+    rc = amqp_basic_publish(knapsack->conn, 1, amqp_cstring_bytes(args->args[4]), amqp_cstring_bytes(args->args[5]), 0, 0, &props, amqp_cstring_bytes(args->args[6]));
     if (rc < 0) {
         amqp_channel_close(knapsack->conn, 1, AMQP_REPLY_SUCCESS);
         amqp_connection_close(knapsack->conn, AMQP_REPLY_SUCCESS);

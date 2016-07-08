@@ -23,16 +23,16 @@ extern "C" {
 }
 #endif
 
-typedef struct knapsack {   /* TODO come up with a better name for this */
+typedef struct conn_info {
     amqp_socket_t *socket;
     amqp_connection_state_t conn;
-} knapsack_t;
+} conn_info_t;
 
 my_bool lib_mysqludf_amqp_sendstring_init(UDF_INIT *initid, UDF_ARGS *args, char *message) {
 
     int rc;
     amqp_rpc_reply_t reply;
-    knapsack_t *knapsack;
+    conn_info_t *conn_info;
 
     if (args->arg_count != 7 || (args->arg_type[0] != STRING_RESULT)        /* host */
                              || (args->arg_type[1] != INT_RESULT)           /* port */
@@ -45,48 +45,48 @@ my_bool lib_mysqludf_amqp_sendstring_init(UDF_INIT *initid, UDF_ARGS *args, char
         return 1;
     }
 
-    knapsack = (knapsack_t *) malloc(sizeof(knapsack_t));
-    knapsack->conn = amqp_new_connection();
-    knapsack->socket = amqp_tcp_socket_new(knapsack->conn);
-    if (knapsack->socket == NULL) {                             /* TODO need a clean-up function to avoid these long IF blocks */
-        amqp_destroy_connection(knapsack->conn);
+    conn_info = (conn_info_t *) malloc(sizeof(conn_info_t));
+    conn_info->conn = amqp_new_connection();
+    conn_info->socket = amqp_tcp_socket_new(conn_info->conn);
+    if (conn_info->socket == NULL) {                             /* TODO need a clean-up function to avoid these long IF blocks */
+        amqp_destroy_connection(conn_info->conn);
         free(initid->ptr);
         initid->ptr = NULL;
         strncpy(message, "lib_mysqludf_amqp_sendstring: socket error", MYSQL_ERRMSG_SIZE);
         return 1;
     }
 
-    rc = amqp_socket_open(knapsack->socket, args->args[0], (int)(*((long long *) args->args[1])));
+    rc = amqp_socket_open(conn_info->socket, args->args[0], (int)(*((long long *) args->args[1])));
     if (rc < 0) {
-        amqp_destroy_connection(knapsack->conn);
+        amqp_destroy_connection(conn_info->conn);
         free(initid->ptr);
         initid->ptr = NULL;
         strncpy(message, "lib_mysqludf_amqp_sendstring: socket open error", MYSQL_ERRMSG_SIZE);
         return 1;
     }
 
-    reply = amqp_login(knapsack->conn, "/", 0, 131072, 0, AMQP_SASL_METHOD_PLAIN, args->args[2], args->args[3]);
+    reply = amqp_login(conn_info->conn, "/", 0, 131072, 0, AMQP_SASL_METHOD_PLAIN, args->args[2], args->args[3]);
     if (reply.reply_type != AMQP_RESPONSE_NORMAL) {
-        amqp_connection_close(knapsack->conn, AMQP_REPLY_SUCCESS);
-        amqp_destroy_connection(knapsack->conn);
+        amqp_connection_close(conn_info->conn, AMQP_REPLY_SUCCESS);
+        amqp_destroy_connection(conn_info->conn);
         free(initid->ptr);
         initid->ptr = NULL;
         strncpy(message, "lib_mysqludf_amqp_sendstring: login error", MYSQL_ERRMSG_SIZE);
         return 1;
     }
 
-    amqp_channel_open(knapsack->conn, 1);
-    reply = amqp_get_rpc_reply(knapsack->conn);
+    amqp_channel_open(conn_info->conn, 1);
+    reply = amqp_get_rpc_reply(conn_info->conn);
     if (reply.reply_type != AMQP_RESPONSE_NORMAL) {
-        amqp_connection_close(knapsack->conn, AMQP_REPLY_SUCCESS);
-        amqp_destroy_connection(knapsack->conn);
+        amqp_connection_close(conn_info->conn, AMQP_REPLY_SUCCESS);
+        amqp_destroy_connection(conn_info->conn);
         free(initid->ptr);
         initid->ptr = NULL;
         strncpy(message, "lib_mysqludf_amqp_sendstring: channel error", MYSQL_ERRMSG_SIZE);
         return 1;
     }
 
-    initid->ptr = (char *) knapsack;
+    initid->ptr = (char *) conn_info;
     initid->maybe_null = 1; // returns NULL
     initid->const_item = 0; // may return something different if called again
 
@@ -96,18 +96,18 @@ my_bool lib_mysqludf_amqp_sendstring_init(UDF_INIT *initid, UDF_ARGS *args, char
 char* lib_mysqludf_amqp_sendstring(UDF_INIT *initid, UDF_ARGS *args, char* result, unsigned long* length, char *is_null, char *error) {
 
     int rc;
-    knapsack_t *knapsack = (knapsack_t *) initid->ptr;
+    conn_info_t *conn_info = (conn_info_t *) initid->ptr;
 
     amqp_basic_properties_t props;
     props._flags = AMQP_BASIC_CONTENT_TYPE_FLAG | AMQP_BASIC_DELIVERY_MODE_FLAG;
     props.content_type = amqp_cstring_bytes("text/plain"); /* TODO would be nice to support JSON */
     props.delivery_mode = 2;
 
-    rc = amqp_basic_publish(knapsack->conn, 1, amqp_cstring_bytes(args->args[4]), amqp_cstring_bytes(args->args[5]), 0, 0, &props, amqp_cstring_bytes(args->args[6]));
+    rc = amqp_basic_publish(conn_info->conn, 1, amqp_cstring_bytes(args->args[4]), amqp_cstring_bytes(args->args[5]), 0, 0, &props, amqp_cstring_bytes(args->args[6]));
     if (rc < 0) {
-        amqp_channel_close(knapsack->conn, 1, AMQP_REPLY_SUCCESS);
-        amqp_connection_close(knapsack->conn, AMQP_REPLY_SUCCESS);
-        amqp_destroy_connection(knapsack->conn);
+        amqp_channel_close(conn_info->conn, 1, AMQP_REPLY_SUCCESS);
+        amqp_connection_close(conn_info->conn, AMQP_REPLY_SUCCESS);
+        amqp_destroy_connection(conn_info->conn);
         free(initid->ptr);
         initid->ptr = NULL;
         *is_null = 1;
@@ -125,10 +125,10 @@ char* lib_mysqludf_amqp_sendstring(UDF_INIT *initid, UDF_ARGS *args, char* resul
 
 void lib_mysqludf_amqp_sendstring_deinit(UDF_INIT *initid) {
     if (initid->ptr != NULL) {
-        knapsack_t *knapsack = (knapsack_t *) initid->ptr;
-        amqp_channel_close(knapsack->conn, 1, AMQP_REPLY_SUCCESS);
-        amqp_connection_close(knapsack->conn, AMQP_REPLY_SUCCESS);
-        amqp_destroy_connection(knapsack->conn);
+        conn_info_t *conn_info = (conn_info_t *) initid->ptr;
+        amqp_channel_close(conn_info->conn, 1, AMQP_REPLY_SUCCESS);
+        amqp_connection_close(conn_info->conn, AMQP_REPLY_SUCCESS);
+        amqp_destroy_connection(conn_info->conn);
         free(initid->ptr);
         initid->ptr = NULL;
     }

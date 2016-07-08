@@ -38,14 +38,26 @@ SELECT lib_mysqludf_amqp_info();
 
 ### `lib_mysqludf_amqp_sendstring(hostname, port, username, password, exchange, routingKey, message)`
 
-Sends a `message` to the given `exchange` on the provided `hostname` and `port` with the supplied `routingKey` as `username` identified by `password`.
+Sends a plain text `message` to the given `exchange` on the provided `hostname` and `port` with the supplied `routingKey` as `username` identified by `password`.
 
 #### Example
 
-Login as user `guest` with password `guest` to the AMQP server running on `localhost` port `5672` and publush the message `Hello, World!` with routing key `test` to exchange `udf`:
+Login as user `guest` with password `guest` to the AMQP server running on `localhost` port `5672` and publish the message `Hello, World!` with routing key `test` to exchange `udf`:
 
 ```
 SELECT lib_mysqludf_amqp_sendstring('localhost', 5672, 'guest', 'guest', 'udf', 'test', 'Hello, World!');
+```
+
+### `lib_mysqludf_amqp_sendjson(hostname, port, username, password, exchange, routingKey, message)`
+
+Sends a JSON `message` to the given `exchange` on the provided `hostname` and `port` with the supplied `routingKey` as `username` identified by `password`.
+
+#### Example
+
+Login as user `guest` with password `guest` to the AMQP server running on `localhost` port `5672` and publish the message `{ "info": "lib_mysqludf_amqp 0.0.0" }` with routing key `test` to exchange `udf`:
+
+```
+SELECT lib_mysqludf_amqp_sendstring('localhost', 5672, 'guest', 'guest', 'udf', 'test', json_object('info', lib_mysqludf_amqp_info()));
 ```
 
 ## License

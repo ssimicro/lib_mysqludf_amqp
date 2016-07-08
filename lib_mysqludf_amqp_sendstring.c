@@ -48,42 +48,28 @@ my_bool lib_mysqludf_amqp_sendstring_init(UDF_INIT *initid, UDF_ARGS *args, char
     conn_info = (conn_info_t *) malloc(sizeof(conn_info_t));
     conn_info->conn = amqp_new_connection();
     conn_info->socket = amqp_tcp_socket_new(conn_info->conn);
-    if (conn_info->socket == NULL) {                             /* TODO need a clean-up function to avoid these long IF blocks */
-        amqp_destroy_connection(conn_info->conn);
-        free(initid->ptr);
-        initid->ptr = NULL;
+    if (conn_info->socket == NULL) {
         strncpy(message, "lib_mysqludf_amqp_sendstring: socket error", MYSQL_ERRMSG_SIZE);
-        return 1;
+        goto init_error_destroy;;
     }
 
     rc = amqp_socket_open(conn_info->socket, args->args[0], (int)(*((long long *) args->args[1])));
     if (rc < 0) {
-        amqp_destroy_connection(conn_info->conn);
-        free(initid->ptr);
-        initid->ptr = NULL;
         strncpy(message, "lib_mysqludf_amqp_sendstring: socket open error", MYSQL_ERRMSG_SIZE);
-        return 1;
+        goto init_error_destroy;
     }
 
     reply = amqp_login(conn_info->conn, "/", 0, 131072, 0, AMQP_SASL_METHOD_PLAIN, args->args[2], args->args[3]);
     if (reply.reply_type != AMQP_RESPONSE_NORMAL) {
-        amqp_connection_close(conn_info->conn, AMQP_REPLY_SUCCESS);
-        amqp_destroy_connection(conn_info->conn);
-        free(initid->ptr);
-        initid->ptr = NULL;
         strncpy(message, "lib_mysqludf_amqp_sendstring: login error", MYSQL_ERRMSG_SIZE);
-        return 1;
+        goto init_error_close;
     }
 
     amqp_channel_open(conn_info->conn, 1);
     reply = amqp_get_rpc_reply(conn_info->conn);
     if (reply.reply_type != AMQP_RESPONSE_NORMAL) {
-        amqp_connection_close(conn_info->conn, AMQP_REPLY_SUCCESS);
-        amqp_destroy_connection(conn_info->conn);
-        free(initid->ptr);
-        initid->ptr = NULL;
         strncpy(message, "lib_mysqludf_amqp_sendstring: channel error", MYSQL_ERRMSG_SIZE);
-        return 1;
+        goto init_error_close;
     }
 
     initid->ptr = (char *) conn_info;
@@ -91,6 +77,16 @@ my_bool lib_mysqludf_amqp_sendstring_init(UDF_INIT *initid, UDF_ARGS *args, char
     initid->const_item = 0; // may return something different if called again
 
     return 0;
+
+init_error_close:
+    amqp_connection_close(conn_info->conn, AMQP_REPLY_SUCCESS);
+
+init_error_destroy:
+    amqp_destroy_connection(conn_info->conn);
+    free(initid->ptr);
+    initid->ptr = NULL;
+
+    return 1;
 }
 
 char* lib_mysqludf_amqp_sendstring(UDF_INIT *initid, UDF_ARGS *args, char* result, unsigned long* length, char *is_null, char *error) {

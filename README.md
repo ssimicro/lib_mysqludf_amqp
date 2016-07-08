@@ -24,6 +24,40 @@ $ ./make
 $ make installdb
 ```
 
+## Example
+
+```
+DROP TABLE IF EXISTS `accounts`;
+CREATE TABLE `accounts` (
+    `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+    `username` varchar(64) NOT NULL,
+     PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='Customer Accounts';
+
+DELIMITER ;;
+
+DROP TRIGGER IF EXISTS `after_insert_on_accounts`;
+CREATE DEFINER=`root`@`localhost` TRIGGER `after_insert_on_accounts` AFTER INSERT ON `accounts` FOR EACH ROW BEGIN
+    SET @amqp_result = (SELECT lib_mysqludf_amqp_sendjson('localhost', 5672, 'guest', 'guest', 'udf', 'test', json_object('table', 'accounts', 'op', 'create', 'payload', json_object('id', NEW.id, 'username', NEW.username))));
+END ;;
+
+DROP TRIGGER IF EXISTS `after_update_on_accounts`;
+CREATE DEFINER=`root`@`localhost` TRIGGER `after_update_on_accounts` AFTER UPDATE ON `accounts` FOR EACH ROW BEGIN
+    SET @amqp_result = (SELECT lib_mysqludf_amqp_sendjson('localhost', 5672, 'guest', 'guest', 'udf', 'test', json_object('table', 'accounts', 'op', 'update', 'payload', json_object('id', NEW.id, 'username', NEW.username))));
+END ;;
+
+DROP TRIGGER IF EXISTS `after_delete_on_accounts`;
+CREATE DEFINER=`root`@`localhost` TRIGGER `after_delete_on_accounts` AFTER DELETE ON `accounts` FOR EACH ROW BEGIN
+    SET @amqp_result = (SELECT lib_mysqludf_amqp_sendjson('localhost', 5672, 'guest', 'guest', 'udf', 'test', json_object('table', 'accounts', 'op', 'delete', 'payload', json_object('id', OLD.id, 'username', OLD.username))));
+END ;;
+
+DELIMITER ;
+
+INSERT INTO accounts (username) values ('jdoe');
+UPDATE accounts SET username = 'jsmith';
+DELETE FROM accounts WHERE id = last_insert_id();
+```
+
 ## API
 
 ### `lib_mysqludf_amqp_info()`

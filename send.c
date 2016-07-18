@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
+#include <time.h>
 
 #include <amqp_tcp_socket.h>
 #include <amqp.h>
@@ -85,9 +86,32 @@ char* lib_mysqludf_amqp_send(UDF_INIT *initid, UDF_ARGS *args, char* result, uns
     conn_info_t *conn_info = (conn_info_t *) initid->ptr;
 
     amqp_basic_properties_t props;
-    props._flags = AMQP_BASIC_CONTENT_TYPE_FLAG | AMQP_BASIC_DELIVERY_MODE_FLAG;
+    props._flags = 0;
+
+    // contentType
     props.content_type = amqp_cstring_bytes(content_type);
+    props._flags |= AMQP_BASIC_CONTENT_TYPE_FLAG;
+
+    // deliveryMode
     props.delivery_mode = 2;
+    props._flags |= AMQP_BASIC_DELIVERY_MODE_FLAG;
+
+    // timestamp
+    props.timestamp = time(NULL);
+    props._flags |= AMQP_BASIC_TIMESTAMP_FLAG;
+
+    // headers
+    amqp_table_entry_t headers[1];
+    headers[0].key = amqp_cstring_bytes("User-Agent");
+    headers[0].value.kind = AMQP_FIELD_KIND_UTF8;
+    headers[0].value.value.bytes = amqp_cstring_bytes(PACKAGE_NAME "/" PACKAGE_VERSION);
+    props.headers.entries = headers;
+    props.headers.num_entries = sizeof(headers) / sizeof(headers[0]);
+    props._flags |= AMQP_BASIC_HEADERS_FLAG;
+
+    // appId
+    props.app_id = amqp_cstring_bytes(PACKAGE_NAME);
+    props._flags |= AMQP_BASIC_APP_ID_FLAG;
 
     rc = amqp_basic_publish(conn_info->conn, 1, amqp_cstring_bytes(args->args[4]), amqp_cstring_bytes(args->args[5]), 0, 0, &props, amqp_cstring_bytes(args->args[6]));
     if (rc < 0) {
@@ -104,7 +128,7 @@ char* lib_mysqludf_amqp_send(UDF_INIT *initid, UDF_ARGS *args, char* result, uns
     *is_null = 1;
     *error = 0;
 
-    /* TODO should this return something besides NULL? SUCCESS/FAIL? Some type of correlationId? */
+    /* TODO should this return something besides NULL? SUCCESS/FAIL? Some type of messageId? */
 
     return NULL;
 }

@@ -27,6 +27,12 @@ $ make installdb
 ## Example
 
 ```
+SET @AMQP_HOST = 'localhost';
+SET @AMQP_PORT = 5672;
+SET @AMQP_USER = 'guest';
+SET @AMQP_PASS = 'guest';
+SET @AMQP_EXCHANGE = 'udf';
+
 DROP TABLE IF EXISTS `accounts`;
 CREATE TABLE `accounts` (
     `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
@@ -38,17 +44,17 @@ DELIMITER ;;
 
 DROP TRIGGER IF EXISTS `after_insert_on_accounts`;
 CREATE DEFINER=`root`@`localhost` TRIGGER `after_insert_on_accounts` AFTER INSERT ON `accounts` FOR EACH ROW BEGIN
-    SET @amqp_result = (SELECT lib_mysqludf_amqp_sendjson('localhost', 5672, 'guest', 'guest', 'udf', 'test', json_object('table', 'accounts', 'op', 'create', 'payload', json_object('id', NEW.id, 'username', NEW.username))));
+    SET @amqp_result = (SELECT lib_mysqludf_amqp_sendjson(@AMQP_HOST, @AMQP_PORT, @AMQP_USER, @AMQP_PASS, @AMQP_EXCHANGE, 'accounts.insert', json_object('id', NEW.id, 'username', NEW.username)));
 END ;;
 
 DROP TRIGGER IF EXISTS `after_update_on_accounts`;
 CREATE DEFINER=`root`@`localhost` TRIGGER `after_update_on_accounts` AFTER UPDATE ON `accounts` FOR EACH ROW BEGIN
-    SET @amqp_result = (SELECT lib_mysqludf_amqp_sendjson('localhost', 5672, 'guest', 'guest', 'udf', 'test', json_object('table', 'accounts', 'op', 'update', 'payload', json_object('id', NEW.id, 'username', NEW.username))));
+    SET @amqp_result = (SELECT lib_mysqludf_amqp_sendjson(@AMQP_HOST, @AMQP_PORT, @AMQP_USER, @AMQP_PASS, @AMQP_EXCHANGE, 'accounts.update', json_object('id', NEW.id, 'username', NEW.username)));
 END ;;
 
 DROP TRIGGER IF EXISTS `after_delete_on_accounts`;
 CREATE DEFINER=`root`@`localhost` TRIGGER `after_delete_on_accounts` AFTER DELETE ON `accounts` FOR EACH ROW BEGIN
-    SET @amqp_result = (SELECT lib_mysqludf_amqp_sendjson('localhost', 5672, 'guest', 'guest', 'udf', 'test', json_object('table', 'accounts', 'op', 'delete', 'payload', json_object('id', OLD.id, 'username', OLD.username))));
+    SET @amqp_result = (SELECT lib_mysqludf_amqp_sendjson(@AMQP_HOST, @AMQP_PORT, @AMQP_USER, @AMQP_PASS, @AMQP_EXCHANGE, 'accounts.delete', json_object('id', OLD.id, 'username', OLD.username)));
 END ;;
 
 DELIMITER ;
@@ -79,7 +85,7 @@ Sends a plain text `message` to the given `exchange` on the provided `hostname` 
 Login as user `guest` with password `guest` to the AMQP server running on `localhost` port `5672` and publish the message `Hello, World!` with routing key `test` to exchange `udf`:
 
 ```
-SELECT lib_mysqludf_amqp_sendstring('localhost', 5672, 'guest', 'guest', 'udf', 'test', 'Hello, World!');
+SELECT lib_mysqludf_amqp_sendstring(@AMQP_HOST, @AMQP_PORT, @AMQP_USER, @AMQP_PASS, @AMQP_EXCHANGE, 'test', 'Hello, World!');
 ```
 
 ### `lib_mysqludf_amqp_sendjson(hostname, port, username, password, exchange, routingKey, message)`
@@ -91,7 +97,7 @@ Sends a JSON `message` to the given `exchange` on the provided `hostname` and `p
 Login as user `guest` with password `guest` to the AMQP server running on `localhost` port `5672` and publish the message `{ "info": "lib_mysqludf_amqp 0.0.0" }` with routing key `test` to exchange `udf`:
 
 ```
-SELECT lib_mysqludf_amqp_sendjson('localhost', 5672, 'guest', 'guest', 'udf', 'test', json_object('lib_mysqludf_amqp_info', cast(lib_mysqludf_amqp_info() as char)));
+SELECT lib_mysqludf_amqp_sendjson(@AMQP_HOST, @AMQP_PORT, @AMQP_USER, @AMQP_PASS, @AMQP_EXCHANGE, 'test', json_object('lib_mysqludf_amqp_info', cast(lib_mysqludf_amqp_info() as char)));
 ```
 
 ## License

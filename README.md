@@ -129,29 +129,12 @@ Upon failure, either `NULL` is returned or an error is raised.
 
 #### Errors
 
-##### Invalid Arguments
-
-Raised when the function is called with an invalid number of arguments or when any argument is not of the correct type.
-
-##### Socket Error
-
-Raised when a socket cannot be allocated.
-
-##### Socket Open Error
-
-Raised when a socket cannot be opened.
-
-##### Login Error
-
-Raised when authentication against the AMQP server specified by `hostname` and `port` fails using the supplied credentials, `username` and `password`.
-
-##### Channel Error
-
-Raised when a communications channel cannot be opened between this module and the AMQP server.
-
-##### uuidgen Error
-
-Raised when unable to generate a UUID. Likely caused by a `malloc()` out of memory failure.
+* **invalid arguments** Raised when the function is called with an invalid number of arguments or when any argument is not of the correct type.
+* **socket error** Raised when a socket cannot be allocated.
+* **socket open error** Raised when a socket cannot be opened.
+* **login error** Raised when authentication against the AMQP server specified by `hostname` and `port` fails using the supplied credentials, `username` and `password`.
+* **channel error** Raised when a communications channel cannot be opened between this module and the AMQP server.
+* **uuidgen error** Raised when unable to generate a UUID. Likely caused by a `malloc()` out of memory failure.
 
 #### Example
 
@@ -183,29 +166,12 @@ Upon failure, either `NULL` is returned or an error is raised.
 
 #### Errors
 
-##### Invalid Arguments
-
-Raised when the function is called with an invalid number of arguments or when any argument is not of the correct type.
-
-##### Socket Error
-
-Raised when a socket cannot be allocated.
-
-##### Socket Open Error
-
-Raised when a socket cannot be opened.
-
-##### Login Error
-
-Raised when authentication against the AMQP server specified by `hostname` and `port` fails using the supplied credentials, `username` and `password`.
-
-##### Channel Error
-
-Raised when a communications channel cannot be opened between this module and the AMQP server.
-
-##### uuidgen Error
-
-Raised when unable to generate a UUID. Likely caused by a `malloc()` out of memory failure.
+* **invalid arguments** Raised when the function is called with an invalid number of arguments or when any argument is not of the correct type.
+* **socket error** Raised when a socket cannot be allocated.
+* **socket open error** Raised when a socket cannot be opened.
+* **login error** Raised when authentication against the AMQP server specified by `hostname` and `port` fails using the supplied credentials, `username` and `password`.
+* **channel error** Raised when a communications channel cannot be opened between this module and the AMQP server.
+* **uuidgen error** Raised when unable to generate a UUID. Likely caused by a `malloc()` out of memory failure.
 
 #### Example
 

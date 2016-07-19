@@ -97,9 +97,7 @@ A string representation of the package name and version, separated by a single s
 
 #### Errors
 
-##### Invalid Arguments
-
-Raised when the function is called with arguments.
+* **Invalid Arguments** Raised when the function is called with arguments.
 
 #### Example
 

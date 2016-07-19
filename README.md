@@ -18,7 +18,8 @@ The project is currently in its infancy. It should not be used in production unt
 
 ```
 $ ./autogen
-$ ./make
+$ ./configure
+$ make
 # sudo make install
 # service mysql-server restart
 $ make installdb
@@ -97,7 +98,7 @@ A string representation of the package name and version, separated by a single s
 
 #### Errors
 
-* **Invalid Arguments** Raised when the function is called with arguments.
+* **invalid arguments** Raised when the function is called with arguments.
 
 #### Example
 

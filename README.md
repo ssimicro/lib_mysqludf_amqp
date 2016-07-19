@@ -26,6 +26,23 @@ $ make installdb
 
 ## Example
 
+### Hello, World!
+
+Publishes a string `'Hello, World!'` to the `udf` exchange on `localhost:5672` with a routing key of `test` as the user `guest` with the password `guest`. Upon success, the message ID is returned.
+
+```
+mysql> SELECT lib_mysqludf_amqp_sendstring('localhost', 5672, 'guest', 'guest', 'udf', 'test', 'Hello, World!');
++---------------------------------------------------------------------------------------------------+
+| lib_mysqludf_amqp_sendstring('localhost', 5672, 'guest', 'guest', 'udf', 'test', 'Hello, World!') |
++---------------------------------------------------------------------------------------------------+
+| b0b4dc35-0f83-4e33-a74c-209f3dd9025e                                                              |
++---------------------------------------------------------------------------------------------------+
+1 row in set (0.00 sec)
+```
+
+### Table Watcher
+
+The following publishes JSON objects representing table rows whenever a row is inserted, updated, or deleted.
 ```
 SET @AMQP_HOST = 'localhost';
 SET @AMQP_PORT = 5672;
@@ -44,17 +61,17 @@ DELIMITER ;;
 
 DROP TRIGGER IF EXISTS `after_insert_on_accounts`;
 CREATE DEFINER=`root`@`localhost` TRIGGER `after_insert_on_accounts` AFTER INSERT ON `accounts` FOR EACH ROW BEGIN
-    SET @amqp_result = (SELECT lib_mysqludf_amqp_sendjson(@AMQP_HOST, @AMQP_PORT, @AMQP_USER, @AMQP_PASS, @AMQP_EXCHANGE, 'accounts.insert', json_object('id', NEW.id, 'username', NEW.username)));
+    SET @message_id = (SELECT lib_mysqludf_amqp_sendjson(@AMQP_HOST, @AMQP_PORT, @AMQP_USER, @AMQP_PASS, @AMQP_EXCHANGE, 'accounts.insert', json_object('id', NEW.id, 'username', NEW.username)));
 END ;;
 
 DROP TRIGGER IF EXISTS `after_update_on_accounts`;
 CREATE DEFINER=`root`@`localhost` TRIGGER `after_update_on_accounts` AFTER UPDATE ON `accounts` FOR EACH ROW BEGIN
-    SET @amqp_result = (SELECT lib_mysqludf_amqp_sendjson(@AMQP_HOST, @AMQP_PORT, @AMQP_USER, @AMQP_PASS, @AMQP_EXCHANGE, 'accounts.update', json_object('id', NEW.id, 'username', NEW.username)));
+    SET @message_id = (SELECT lib_mysqludf_amqp_sendjson(@AMQP_HOST, @AMQP_PORT, @AMQP_USER, @AMQP_PASS, @AMQP_EXCHANGE, 'accounts.update', json_object('id', NEW.id, 'username', NEW.username)));
 END ;;
 
 DROP TRIGGER IF EXISTS `after_delete_on_accounts`;
 CREATE DEFINER=`root`@`localhost` TRIGGER `after_delete_on_accounts` AFTER DELETE ON `accounts` FOR EACH ROW BEGIN
-    SET @amqp_result = (SELECT lib_mysqludf_amqp_sendjson(@AMQP_HOST, @AMQP_PORT, @AMQP_USER, @AMQP_PASS, @AMQP_EXCHANGE, 'accounts.delete', json_object('id', OLD.id, 'username', OLD.username)));
+    SET @message_id = (SELECT lib_mysqludf_amqp_sendjson(@AMQP_HOST, @AMQP_PORT, @AMQP_USER, @AMQP_PASS, @AMQP_EXCHANGE, 'accounts.delete', json_object('id', OLD.id, 'username', OLD.username)));
 END ;;
 
 DELIMITER ;
@@ -68,7 +85,21 @@ DELETE FROM accounts WHERE id = last_insert_id();
 
 ### `lib_mysqludf_amqp_info()`
 
-Returns an informational message denoting the package name and version. For example, `lib_mysqludf_amqp 0.0.0`.
+Returns an informational message denoting the package name and version.
+
+#### Parameters
+
+None. Supplying any parameters will result in an error.
+
+#### Returns
+
+A string representation of the package name and version, separated by a single space. For example, `lib_mysqludf_amqp 0.0.0`.
+
+#### Errors
+
+##### Invalid Arguments
+
+Raised when the function is called with arguments.
 
 #### Example
 
@@ -79,6 +110,48 @@ SELECT lib_mysqludf_amqp_info();
 ### `lib_mysqludf_amqp_sendstring(hostname, port, username, password, exchange, routingKey, message)`
 
 Sends a plain text `message` to the given `exchange` on the provided `hostname` and `port` with the supplied `routingKey` as `username` identified by `password`.
+
+#### Parameters
+
+* `hostname` (string). The hostname of the AMQP server.
+* `port` (number). The TCP port number that the AMQP server is listening on.
+* `username` (string). The username of AMQP user.
+* `password` (string). The password of AMQP user.
+* `exchange` (string). The name of the AMQP exchange to publish the message to.
+* `routingKey` (string). The routing key for this message.
+* `message` (string). The body of the message.
+
+#### Returns
+
+Upon succes, this function returns a string containing the message ID, a [Universally Unique IDentifier (UUID)](https://tools.ietf.org/html/rfc4122) (v4).
+
+Upon failure, either `NULL` is returned or an error is raised.
+
+#### Errors
+
+##### Invalid Arguments
+
+Raised when the function is called with an invalid number of arguments or when any argument is not of the correct type.
+
+##### Socket Error
+
+Raised when a socket cannot be allocated.
+
+##### Socket Open Error
+
+Raised when a socket cannot be opened.
+
+##### Login Error
+
+Raised when authentication against the AMQP server specified by `hostname` and `port` fails using the supplied credentials, `username` and `password`.
+
+##### Channel Error
+
+Raised when a communications channel cannot be opened between this module and the AMQP server.
+
+##### uuidgen Error
+
+Raised when unable to generate a UUID. Likely caused by a `malloc()` out of memory failure.
 
 #### Example
 
@@ -91,6 +164,48 @@ SELECT lib_mysqludf_amqp_sendstring(@AMQP_HOST, @AMQP_PORT, @AMQP_USER, @AMQP_PA
 ### `lib_mysqludf_amqp_sendjson(hostname, port, username, password, exchange, routingKey, message)`
 
 Sends a JSON `message` to the given `exchange` on the provided `hostname` and `port` with the supplied `routingKey` as `username` identified by `password`.
+
+#### Parameters
+
+* `hostname` (string). The hostname of the AMQP server.
+* `port` (number). The TCP port number that the AMQP server is listening on.
+* `username` (string). The username of AMQP user.
+* `password` (string). The password of AMQP user.
+* `exchange` (string). The name of the AMQP exchange to publish the message to.
+* `routingKey` (string). The routing key for this message.
+* `message` (string). The body of the message, a JSON string.
+
+#### Returns
+
+Upon succes, this function returns a string containing the message ID, a [Universally Unique IDentifier (UUID)](https://tools.ietf.org/html/rfc4122) (v4).
+
+Upon failure, either `NULL` is returned or an error is raised.
+
+#### Errors
+
+##### Invalid Arguments
+
+Raised when the function is called with an invalid number of arguments or when any argument is not of the correct type.
+
+##### Socket Error
+
+Raised when a socket cannot be allocated.
+
+##### Socket Open Error
+
+Raised when a socket cannot be opened.
+
+##### Login Error
+
+Raised when authentication against the AMQP server specified by `hostname` and `port` fails using the supplied credentials, `username` and `password`.
+
+##### Channel Error
+
+Raised when a communications channel cannot be opened between this module and the AMQP server.
+
+##### uuidgen Error
+
+Raised when unable to generate a UUID. Likely caused by a `malloc()` out of memory failure.
 
 #### Example
 

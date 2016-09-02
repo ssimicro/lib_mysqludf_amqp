@@ -7,17 +7,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#ifdef    __cplusplus
-extern "C" {
-#endif
-
-    my_bool lib_mysqludf_amqp_info_init(UDF_INIT *initid, UDF_ARGS *args, char *message);
-    char *lib_mysqludf_amqp_info(UDF_INIT *initid, UDF_ARGS *args, char *result, unsigned long *length, char *is_null, char *error);
-    void lib_mysqludf_amqp_info_deinit(UDF_INIT *initid);
-
-#ifdef    __cplusplus
-}
-#endif
+#include "lib_mysqludf_amqp.h"
 
 my_bool lib_mysqludf_amqp_info_init(UDF_INIT *initid, UDF_ARGS *args, char *message) {
 

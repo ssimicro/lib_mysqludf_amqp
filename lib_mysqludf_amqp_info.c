@@ -26,14 +26,14 @@ my_bool lib_mysqludf_amqp_info_init(UDF_INIT *initid, UDF_ARGS *args, char *mess
         return 1;
     }
 
-    initid->max_length = strlen(PACKAGE_STRING) + 1;
+    initid->max_length = (unsigned long) strlen(PACKAGE_STRING) + 1;
     return 0;
 }
 
 char* lib_mysqludf_amqp_info(UDF_INIT *initid, UDF_ARGS *args, char* result, unsigned long* length, char *is_null, char *error) {
 
     strncpy(result, PACKAGE_STRING, strlen(PACKAGE_STRING) + 1);
-    *length = strlen(result);
+    *length = (unsigned long) strlen(result);
 
     *is_null = 0;
 

@@ -143,7 +143,7 @@ char* lib_mysqludf_amqp_send(UDF_INIT *initid, UDF_ARGS *args, char* result, uns
 
     *is_null = 0;
     *error = 0;
-    *length = strlen(conn_info->message_id);
+    *length = (unsigned long) strlen(conn_info->message_id);
 
     return conn_info->message_id;
 }

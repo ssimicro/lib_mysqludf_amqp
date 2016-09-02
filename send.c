@@ -21,7 +21,9 @@ typedef struct conn_info {
     char *message_id;
 } conn_info_t;
 
-my_bool lib_mysqludf_amqp_send_init(UDF_INIT *initid, UDF_ARGS *args, char *message) {
+my_bool
+lib_mysqludf_amqp_send_init(UDF_INIT *initid, UDF_ARGS *args, char *message)
+{
 
     int rc;
     amqp_rpc_reply_t reply;
@@ -88,7 +90,9 @@ init_error_destroy:
     return 1;
 }
 
-char* lib_mysqludf_amqp_send(UDF_INIT *initid, UDF_ARGS *args, char* result, unsigned long* length, char *is_null, char *error, char *content_type) {
+char*
+lib_mysqludf_amqp_send(UDF_INIT *initid, UDF_ARGS *args, char* result, unsigned long* length, char *is_null, char *error, char *content_type)
+{
 
     int rc;
     conn_info_t *conn_info = (conn_info_t *) initid->ptr;
@@ -148,7 +152,9 @@ char* lib_mysqludf_amqp_send(UDF_INIT *initid, UDF_ARGS *args, char* result, uns
     return conn_info->message_id;
 }
 
-void lib_mysqludf_amqp_send_deinit(UDF_INIT *initid) {
+void
+lib_mysqludf_amqp_send_deinit(UDF_INIT *initid)
+{
     if (initid->ptr != NULL) {
         conn_info_t *conn_info = (conn_info_t *) initid->ptr;
         (void) amqp_channel_close(conn_info->conn, 1, AMQP_REPLY_SUCCESS);

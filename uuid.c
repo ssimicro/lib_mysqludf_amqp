@@ -8,7 +8,9 @@
 /*
  * simple implementation of version 4 UUID generation
  */
-char *uuidgen(void) {
+char*
+uuidgen(void)
+{
 
     char *buffer = malloc(UUID_BUF_LEN);
     if (buffer == NULL) {

@@ -3,10 +3,6 @@
 `lib_mysqludf_amqp` is a [MySQL](http://www.mysql.com/) [user-defined function](http://dev.mysql.com/doc/refman/5.7/en/udf-features.html)
 library for sending [AMQP](https://www.amqp.org/) messages.
 
-## Status
-
-The project is currently in its infancy. It should not be used in production until the dust has settled and proper testing is complete.
-
 ## Requirements
 
 * C compiler and standard build tools (make, sh, ...).

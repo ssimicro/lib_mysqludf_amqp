@@ -1,6 +1,8 @@
 #ifndef __LIB_MYSQLUDF_AMQP_SEND_H
 #define __LIB_MYSQLUDF_AMQP_SEND_H
 
+#include <mysql.h>
+
 #ifdef    __cplusplus
 extern "C" {
 #endif

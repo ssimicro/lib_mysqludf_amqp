@@ -12,7 +12,7 @@
 my_bool lib_mysqludf_amqp_info_init(UDF_INIT *initid, UDF_ARGS *args, char *message) {
 
     if (args->arg_count != 0) {
-        strncpy(message, "lib_mysqludf_amqp_info: invalid arguments", MYSQL_ERRMSG_SIZE);
+        (void) strncpy(message, "lib_mysqludf_amqp_info: invalid arguments", MYSQL_ERRMSG_SIZE);
         return 1;
     }
 
@@ -22,7 +22,7 @@ my_bool lib_mysqludf_amqp_info_init(UDF_INIT *initid, UDF_ARGS *args, char *mess
 
 char* lib_mysqludf_amqp_info(UDF_INIT *initid, UDF_ARGS *args, char* result, unsigned long* length, char *is_null, char *error) {
 
-    strncpy(result, PACKAGE_STRING, strlen(PACKAGE_STRING) + 1);
+    (void) strncpy(result, PACKAGE_STRING, strlen(PACKAGE_STRING) + 1);
     *length = (unsigned long) strlen(result);
 
     *is_null = 0;
@@ -31,6 +31,6 @@ char* lib_mysqludf_amqp_info(UDF_INIT *initid, UDF_ARGS *args, char* result, uns
 }
 
 void lib_mysqludf_amqp_info_deinit(UDF_INIT *initid) {
-
+    /* nothing to do here */
     return;
 }

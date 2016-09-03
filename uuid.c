@@ -12,13 +12,15 @@ char*
 uuidgen(void)
 {
 
+    int i;
+    int pos;
     char *buffer = malloc(UUID_BUF_LEN);
     if (buffer == NULL) {
         return NULL;
     }
 
     memset(buffer, '\0', UUID_BUF_LEN);
-    for (int i = 0, pos = 0; i < 16 && pos < UUID_BUF_LEN - 1; i++) {
+    for (i = 0, pos = 0; i < 16 && pos < UUID_BUF_LEN - 1; i++) {
 
         uint8_t r = (uint8_t) arc4random();
 

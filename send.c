@@ -74,8 +74,8 @@ lib_mysqludf_amqp_send_init(UDF_INIT *initid, UDF_ARGS *args, char *message)
     }
 
     initid->ptr = (char *) conn_info;
-    initid->maybe_null = 1; // returns NULL
-    initid->const_item = 0; // may return something different if called again
+    initid->maybe_null = 1; /* returns NULL */
+    initid->const_item = 0; /* may return something different if called again */
 
     return 0;
 
@@ -96,24 +96,23 @@ lib_mysqludf_amqp_send(UDF_INIT *initid, UDF_ARGS *args, char* result, unsigned 
 
     int rc;
     conn_info_t *conn_info = (conn_info_t *) initid->ptr;
-
+    amqp_table_entry_t headers[1];
     amqp_basic_properties_t props;
     props._flags = 0;
 
-    // contentType
+    /* contentType */
     props.content_type = amqp_cstring_bytes(content_type);
     props._flags |= AMQP_BASIC_CONTENT_TYPE_FLAG;
 
-    // deliveryMode
+    /* deliveryMode */
     props.delivery_mode = 2;
     props._flags |= AMQP_BASIC_DELIVERY_MODE_FLAG;
 
-    // timestamp
+    /* timestamp */
     props.timestamp = time(NULL);
     props._flags |= AMQP_BASIC_TIMESTAMP_FLAG;
 
-    // headers
-    amqp_table_entry_t headers[1];
+    /* headers */
     headers[0].key = amqp_cstring_bytes("User-Agent");
     headers[0].value.kind = AMQP_FIELD_KIND_UTF8;
     headers[0].value.value.bytes = amqp_cstring_bytes(PACKAGE_NAME "/" PACKAGE_VERSION);
@@ -121,11 +120,11 @@ lib_mysqludf_amqp_send(UDF_INIT *initid, UDF_ARGS *args, char* result, unsigned 
     props.headers.num_entries = sizeof(headers) / sizeof(headers[0]);
     props._flags |= AMQP_BASIC_HEADERS_FLAG;
 
-    // appId
+    /* appId */
     props.app_id = amqp_cstring_bytes(PACKAGE_NAME);
     props._flags |= AMQP_BASIC_APP_ID_FLAG;
 
-    // messageId
+    /* messageId */
     props.message_id = amqp_cstring_bytes(conn_info->message_id);
     props._flags |= AMQP_BASIC_MESSAGE_ID_FLAG;
 

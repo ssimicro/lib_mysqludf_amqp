@@ -3,6 +3,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#if HAVE_LIBBSD == 1
+#include <bsd/stdlib.h>
+#endif /* HAVE_LIBBSD */
+
 #define UUID_BUF_LEN 40
 
 /*

@@ -6,9 +6,9 @@ library for sending [AMQP](https://www.amqp.org/) messages.
 ## Requirements
 
 * C compiler and standard build tools (make, sh, ...).
-* Autotools and friends (autoconf, automake, libtool, pkg-config, ...).
 * [MySQL](http://www.mysql.com/)
 * [rabbitmq-c](https://github.com/alanxz/rabbitmq-c)
+* [libbsd](https://libbsd.freedesktop.org/) (on GNU/Linux)
 
 ## Building
 

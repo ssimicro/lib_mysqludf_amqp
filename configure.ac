@@ -34,6 +34,9 @@ AC_C_CONST
 AC_TYPE_SIZE_T
 AC_HEADER_STDC
 
+AC_DEFINE([_BSD_SOURCE], [], [for snprintf()])
+AC_DEFINE([_DEFAULT_SOURCE], [], [for GNU systems that complain about _BSD_SOURCE being deprecated])
+
 AC_CONFIG_HEADERS([config.h:config.in])
 
 AC_OUTPUT([Makefile])

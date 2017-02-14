@@ -18,7 +18,6 @@
 typedef struct conn_info {
     amqp_socket_t *socket;
     amqp_connection_state_t conn;
-    char *message_id;
 } conn_info_t;
 
 my_bool
@@ -64,12 +63,6 @@ lib_mysqludf_amqp_send_init(UDF_INIT *initid, UDF_ARGS *args, char *message)
     reply = amqp_get_rpc_reply(conn_info->conn);
     if (reply.reply_type != AMQP_RESPONSE_NORMAL) {
         (void) strncpy(message, "lib_mysqludf_amqp_send: channel error", MYSQL_ERRMSG_SIZE);
-        goto init_error_close;
-    }
-
-    conn_info->message_id = uuidgen();
-    if (conn_info->message_id == NULL) {
-        (void) strncpy(message, "lib_mysqludf_amqp_send: uuidgen error", MYSQL_ERRMSG_SIZE);
         goto init_error_close;
     }
 
@@ -125,7 +118,8 @@ lib_mysqludf_amqp_send(UDF_INIT *initid, UDF_ARGS *args, char* result, unsigned 
     props._flags |= AMQP_BASIC_APP_ID_FLAG;
 
     /* messageId */
-    props.message_id = amqp_cstring_bytes(conn_info->message_id);
+    ssiuuidgen(result);
+    props.message_id = amqp_cstring_bytes(result);
     props._flags |= AMQP_BASIC_MESSAGE_ID_FLAG;
 
     rc = amqp_basic_publish(conn_info->conn, 1, amqp_cstring_bytes(args->args[4]), amqp_cstring_bytes(args->args[5]), 0, 0, &props, amqp_cstring_bytes(args->args[6]));
@@ -133,8 +127,6 @@ lib_mysqludf_amqp_send(UDF_INIT *initid, UDF_ARGS *args, char* result, unsigned 
         (void) amqp_channel_close(conn_info->conn, 1, AMQP_REPLY_SUCCESS);
         (void) amqp_connection_close(conn_info->conn, AMQP_REPLY_SUCCESS);
         (void) amqp_destroy_connection(conn_info->conn);
-        free(conn_info->message_id);
-        conn_info->message_id = NULL;
         free(initid->ptr);
         initid->ptr = NULL;
 
@@ -146,9 +138,9 @@ lib_mysqludf_amqp_send(UDF_INIT *initid, UDF_ARGS *args, char* result, unsigned 
 
     *is_null = 0;
     *error = 0;
-    *length = (unsigned long) strlen(conn_info->message_id);
+    *length = (unsigned long) strlen(result);
 
-    return conn_info->message_id;
+    return result;
 }
 
 void
@@ -159,8 +151,6 @@ lib_mysqludf_amqp_send_deinit(UDF_INIT *initid)
         (void) amqp_channel_close(conn_info->conn, 1, AMQP_REPLY_SUCCESS);
         (void) amqp_connection_close(conn_info->conn, AMQP_REPLY_SUCCESS);
         (void) amqp_destroy_connection(conn_info->conn);
-        free(conn_info->message_id);
-        conn_info->message_id = NULL;
         free(initid->ptr);
         initid->ptr = NULL;
     }

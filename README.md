@@ -12,6 +12,8 @@ library for sending [AMQP](https://www.amqp.org/) messages.
 
 ## Building
 
+These are the instructions for building [releases](https://github.com/ssimicro/lib_mysqludf_amqp/releases). If you are building from non-release source (e.g. `git clone`) and there is no `./configure` script, run `./autogen` first and then follow the instructions below..
+
 ```
 $ ./configure
 $ make

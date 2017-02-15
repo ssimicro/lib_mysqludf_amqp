@@ -109,6 +109,18 @@ lib_mysqludf_amqp_send(UDF_INIT *initid, UDF_ARGS *args, char* result, unsigned 
 {
 
     int rc;
+    amqp_bytes_t exchange = {
+        .bytes = args->args[1],
+        .len = args->lengths[1]
+    };
+    amqp_bytes_t routing_key = {
+        .bytes = args->args[2],
+        .len = args->lengths[2],
+    };
+    amqp_bytes_t payload = {
+        .bytes = args->args[3],
+        .len = args->lengths[3],
+    };
     conn_info_t *conn_info = (conn_info_t *) initid->ptr;
     amqp_table_entry_t headers[1];
     amqp_basic_properties_t props;
@@ -143,7 +155,7 @@ lib_mysqludf_amqp_send(UDF_INIT *initid, UDF_ARGS *args, char* result, unsigned 
     props.message_id = amqp_cstring_bytes(result);
     props._flags |= AMQP_BASIC_MESSAGE_ID_FLAG;
 
-    rc = amqp_basic_publish(conn_info->conn, 1, amqp_cstring_bytes(args->args[1]), amqp_cstring_bytes(args->args[2]), 0, 0, &props, amqp_cstring_bytes(args->args[3]));
+    rc = amqp_basic_publish(conn_info->conn, 1, exchange, routing_key, 0, 0, &props, payload);
     if (rc < 0) {
         (void) amqp_channel_close(conn_info->conn, 1, AMQP_REPLY_SUCCESS);
         (void) amqp_connection_close(conn_info->conn, AMQP_REPLY_SUCCESS);

@@ -13,7 +13,6 @@ library for sending [AMQP](https://www.amqp.org/) messages.
 ## Building
 
 ```
-$ ./autogen
 $ ./configure
 $ make
 # sudo make install

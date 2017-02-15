@@ -1,6 +1,6 @@
 AC_PREREQ(2.59)
 
-AC_INIT([lib_mysqludf_amqp], [1.0.1], [thomasc@ssimicro.com])
+AC_INIT([lib_mysqludf_amqp], [2.0.0], [thomasc@ssimicro.com])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([config])
 
